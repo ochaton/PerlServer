@@ -24,10 +24,10 @@ use v5.018;
 
 our $glue = 'scalar_glue';
 our %options = (
-    create    => 0,
+    create    => 1,
     exclusive => 0,
     mode      => 0644,
-    destroy   => 0,
+    destroy   => 1,
 );
 
 my ($server, $LOG);
@@ -70,6 +70,14 @@ sub alrm_handler {
 
 sub listenner {
     ($server, my $max_client, $LOG) = @_;
+    
+    $SIG{INT} = sub {
+        print $LOG 'Listenner: catch interraption. Dying...' . $/;
+        until (waitpid(-1, 0) == -1) { };
+        print $LOG 'Listenner: sons dead. Killing me...' . $/;
+        close($LOG);
+        exit(0);
+    };
 
     my $client_count;
     tie $client_count, 'IPC::Shareable', $glue, { %options } or 

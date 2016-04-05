@@ -54,13 +54,13 @@ sub get_client_count {
 
 sub show_client_count {
 	(tied $client_count)->shlock();
-	print $LOG "Mainframe($$): now \$client_count = $client_count";
+	print $LOG "Mainframe($$): now \$client_count = $client_count $/";
 	(tied $client_count)->shunlock();	
 }
 
 sub wait_clients {
 	# Прибираемся:
-	print $LOG "Mainframe($$): dying... Clients: " . get_client_count . "\n";
+	print $LOG "Mainframe($$): dying... Clients: " . get_client_count . $/;
 	until ( (my $pid = waitpid(-1, 0)) == -1 ) { }
 	print $LOG "Mainframe($$): so now I'm dead\n";
 }
@@ -83,7 +83,6 @@ sub termination {
 }
 
 sub mainframe {
-	setsid();
 	
 	$SIG{INT} = \&interraption;
 	$SIG{TERM} = \&termination;
@@ -142,20 +141,16 @@ sub serve_client {
 			die "Mainframe($$)::tie died: $!";
 
 		my $ppid = getppid();
-		say "Mainframe($ppid)::serve: Client openned $$";
+		print $LOG "Mainframe($ppid)::serve: Client openned $$ $/";
 
 		close ($server);
 
 		unless (defined $client) {
-			say "Mainframe($ppid)::serve: client (undef) closed: $$";
+			print $LOG "Mainframe($ppid)::serve: client (undef) closed: $$ $/";
 			dec_client_count;
 			show_client_count;
 			exit;
 		}
-
-		my $other = getpeername($client);
-		my ($err, $host, $service) = getnameinfo($other);
-		# say "Client $host:$service $/";
 
 		$client->autoflush(1);
 		my $msg = <$client>;
@@ -167,7 +162,7 @@ sub serve_client {
 		$client->shutdown(2);
 		close($client);
 
-		say "Mainframe($ppid)::serve: client closed: $$";
+		print $LOG "Mainframe($ppid)::serve: client closed: $$ $/";
 		dec_client_count;
 		show_client_count;
 	

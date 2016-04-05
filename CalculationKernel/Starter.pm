@@ -9,6 +9,7 @@ use JSON::XS;
 use POSIX qw ( mkfifo );
 
 use CalculationKernel::Logger qw ( logger );
+use CalculationKernel::Listenner qw ( listenner );
 
 our $VERSION = '2.0';
 
@@ -22,12 +23,16 @@ my $config_file = "$FindBin::Bin/./multi_worker.json";
 my $log_file = "$FindBin::Bin/./log.pipe";
 my $LOG;
 my $log_pid;
+my $listenner_pid;
 my $server;
 
 sub server_kill {
 
-    print 'prepare to kill' . $/;
-    kill 2, $log_pid;   # send SIGINT
+    print 'Starter: prepare to kill' . $/;
+
+    kill 2, $listenner_pid; # send SIGINT
+    kill 2, $log_pid;       # send SIGINT
+    close ($LOG);
 
     until (waitpid(-1, 0) == -1) {  }
 
@@ -36,7 +41,6 @@ sub server_kill {
 
     close($server) if $server;
 
-    close($LOG);
     exit(0);
 }
 
@@ -71,7 +75,8 @@ sub get_config {
                 LocalPort => $port,
                 Reuse_Addr => 1,
                 Listen => 2
-            }
+            },
+            clients => 50,
         };
     }
 
@@ -99,7 +104,7 @@ sub start_logger {
 
     print 'Log File ' . $log_file . ' created successfully' . $/; 
 
-    logger($log_file);
+    return logger($log_file);
 }
 
 sub start_server {
@@ -112,6 +117,11 @@ sub start_server {
 
     ($LOG, $log_pid) = start_logger();
 
+    $listenner_pid = fork();
+    unless ($listenner_pid) {
+        listenner($server, $config->{clients}, $LOG);
+        exit(0);    # save :)
+    }
 
     until (waitpid(-1, 0) == -1) {  };
 }

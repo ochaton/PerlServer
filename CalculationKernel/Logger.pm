@@ -27,17 +27,18 @@ sub logger {
         $LOG->autoflush(1);
 
         $SIG{INT} = sub {
-            print 'Catch interraption' . $/;
+            print 'Logger: Catch interraption' . $/;
 
-            $LOGGER->print('Logger Stoped' . $/);
+            $LOGGER->print('[' . gmtime . '] ' . $_) while (<$LOG>) ;
+            $LOGGER->print('[' . gmtime . '] ' . 'Logger Stoped' . $/);
             
             close($LOGGER);
             exit(0);
         };
 
-        $LOGGER->print($_ . $/) while (<$LOG>) ;
+        $LOGGER->print('[' . gmtime . '] ' . $_) while (<$LOG>) ;
         
-        $LOGGER->print('Logger Stoped' . $/);
+        $LOGGER->print('[' . gmtime . '] Logger Stoped' . $/);
         close($LOGGER);
         exit(0);
     }
@@ -45,7 +46,7 @@ sub logger {
     open (my $LOG, '>', $log_file) or 
             die 'Can\'t open for write ' . "$log_file: $@ $/";
     $LOG->autoflush(1);
-    
+
     return ( $LOG, $log_pid );
     1;
 }
