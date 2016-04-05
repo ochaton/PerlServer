@@ -10,21 +10,43 @@ use base qw(Exporter);
 our @EXPORT_OK = qw( logger );
 our @EXPORT = qw( logger );
 
+use FindBin;
+my $server_log = "$FindBin::Bin" . '/./server.log';
+
 sub logger {
     my $log_file = shift;
 
     return 0 if (!-e $log_file);
 
-    unless (fork()) {
-        open (my $LOG, '<', $log_file);
-        open (my $LOGGER, '>', '../server.log');
+    my $log_pid = fork();
+    unless ( $log_pid ) {
+        open (my $LOGGER, '>', $server_log);
+        open (my $LOG, '<', $log_file) or 
+            die 'Can\'t open for read ' . "$log_file: $@ $/";
 
-        $LOGGER->print($_ . "\n") while (<$LOG>) ;
+        $LOG->autoflush(1);
+
+        $SIG{INT} = sub {
+            print 'Catch interraption' . $/;
+
+            $LOGGER->print('Logger Stoped' . $/);
+            
+            close($LOGGER);
+            exit(0);
+        };
+
+        $LOGGER->print($_ . $/) while (<$LOG>) ;
         
-        $LOGGER->print("Logger Stoped\n");
+        $LOGGER->print('Logger Stoped' . $/);
         close($LOGGER);
         exit(0);
     }
+
+    open (my $LOG, '>', $log_file) or 
+            die 'Can\'t open for write ' . "$log_file: $@ $/";
+    $LOG->autoflush(1);
+    
+    return ( $LOG, $log_pid );
     1;
 }
 
