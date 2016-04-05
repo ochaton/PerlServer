@@ -8,7 +8,7 @@ use JSON::XS;
 
 use POSIX qw ( mkfifo );
 
-use Logger::logger;
+use CalculationKernel::Logger qw ( logger );
 
 our $VERSION = '2.0';
 
@@ -34,6 +34,8 @@ sub server_kill {
 }
 
 sub get_config {
+    my $port = shift;
+    my $config;
     if (-e $config_file and !-z $config_file) {
 
         open (my $fh, '<', $config_file);
@@ -43,7 +45,8 @@ sub get_config {
 
         my $src = JSON::XS::decode_json($lines);
 
-        for my $config (@$src) {
+        for (@$src) {
+            $config = $_;
             last if ($config->{name} eq 'CalculationKernel');
             $config = undef;
         }
@@ -98,6 +101,6 @@ sub start_server {
     server_kill();
 }
 
-start_server(9000);
+# start_server(9000);
 
 1;
