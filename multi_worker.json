@@ -1,8 +1,9 @@
 [{
     "name" : "CalculationKernel",
+    "clients" : 50,
     "config":
     {
-        "LocalPort" : 9000,
+        "LocalPort" : 9100,
         "Type" : "SOCK_STREAM",
         "Reuse_Addr" : 1,
         "Listen" : 2
@@ -12,7 +13,7 @@
     "name" : "ExamplesGenerator",
     "config":
     {
-        "LocalPort" : 9001,
+        "LocalPort" : 9101,
         "Type" : "SOCK_STREAM",
         "Reuse_Addr" : 1,
         "Listen" : 2
@@ -22,7 +23,7 @@
     "name" : "RequestGenerator",
     "config":
     {
-        "LocalPort" : 9002,
+        "LocalPort" : 9102,
         "Type" : "SOCK_STREAM",
         "Reuse_Addr" : 1,
         "Listen" : 2

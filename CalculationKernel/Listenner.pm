@@ -43,7 +43,7 @@ sub new_mainframe {
         push @client_queue, $var if (defined $var); 
     }
 
-    print $LOG "Listenner: push $max_client\n";
+    print $LOG "[Listenner]: push $max_client\n";
 
     unless (fork()) {
         mainframe($server, \@client_queue, $glue, $max_client, $LOG);
@@ -52,29 +52,31 @@ sub new_mainframe {
 
     # closing openning sockets:
     for (@client_queue) {
-        print $LOG "Listenner: closing $_\n";
+        print $LOG "[Listenner]: closing $_\n";
         close($_);
     }
 }
 
 sub alrm_handler {
-    print $LOG "Listenner: Alarm!\n";
+    print $LOG "[Listenner]: Alarm!\n";
 
-    print $LOG "Listenner: alarm push " . ($#local_queue + 1) . "\n";
+    print $LOG "[Listenner]: alarm push " . ($#local_queue + 1) . "\n";
     new_mainframe($server, $glue, $LOG, \@local_queue, $#local_queue + 1);
 
     undef(@local_queue);
 
-    print $LOG "Listenner: Alarm: The end\n";
+    print $LOG "[Listenner]: Alarm: The end\n";
 };
 
 sub listenner {
     ($server, my $max_client, $LOG) = @_;
     
     $SIG{INT} = sub {
-        print $LOG 'Listenner: catch interraption. Dying...' . $/;
         until (waitpid(-1, 0) == -1) { };
-        print $LOG 'Listenner: sons dead. Killing me...' . $/;
+
+        print $LOG '[Listenner]: catch interraption. Dying...' . $/;
+        print $LOG '[Listenner]: sons dead. Killing me...' . $/;
+        
         close($LOG);
         exit(0);
     };
@@ -86,11 +88,11 @@ sub listenner {
     $client_count = 0;
 
     (tied $client_count)->shlock();
-    print $LOG "Listenner: tie " . $client_count . "\n"; 
+    print $LOG "[Listenner]: tie " . $client_count . "\n"; 
     (tied $client_count)->shunlock();
 
-    print $LOG "Listenner: serever started: $$\n";
-    print $LOG "Listenner: max_client = $max_client\n";
+    print $LOG "[Listenner]: serever started: $$\n";
+    print $LOG "[Listenner]: max_client = $max_client\n";
 
     while (1) {
         
@@ -98,14 +100,14 @@ sub listenner {
         my $alarm_var = 0;
 
         while (my $client = $server->accept()) {
-            print $LOG "Listenner: new Connection $client\n";
+            print $LOG "[Listenner]: new Connection $client\n";
 
             push @local_queue, $client;
 
             if ($#local_queue + 1 >= $max_client) {
                 alarm 0;            # stop the clock! There's no need in it!
                 $alarm_var = 0;
-                print $LOG "Listenner: stop the clock\n";
+                print $LOG "[Listenner]: stop the clock\n";
 
                 new_mainframe($server, $glue, $LOG, \@local_queue, min($max_client, $#local_queue + 1));
 
@@ -114,13 +116,13 @@ sub listenner {
             else {            # if amount of connections not enough:
                 unless ($alarm_var) {
                     alarm(1); $alarm_var = 1;
-                    print $LOG "Listenner: start the clock\n";
+                    print $LOG "[Listenner]: start the clock\n";
                 } else {
-                    # print $LOG "Listenner: clock already started";
+                    # print $LOG "[Listenner]: clock already started";
                 }
             }
         }
-        print $LOG "Listenner: I wanna stop...\n";
+        print $LOG "[Listenner]: I wanna stop...\n";
     }
 }
 

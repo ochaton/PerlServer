@@ -14,7 +14,7 @@ use feature 'say';
 our $VERSION = '1.0';
 my $file_path = '../calcs.txt';
 
-my $timeout = 1000 * 100;
+my $timeout = 1000 * 1000;
 my $buf_len = 256;
 
 $SIG{ALRM} = sub {
@@ -53,15 +53,16 @@ sub server_kill {
 sub start_server {
     $SIG{INT} = \&server_kill;
 
-    my $port = shift;
-    my $server = IO::Socket::INET->new(
-        LocalPort  => $port,
-        Type       => SOCK_STREAM,
-        Reuse_Addr => 1,
-        Listen     => 10
-    ) or die "Can't create server on $port port: $@ $/";
+    my ($port, $config) = @_;
 
-    say "server started";
+    my $server = IO::Socket::INET->new( %{$config->{config}} )
+      or die "[ServerGenerator] Can't create server on $port port: $@ $/";
+
+    print '[ServerGenerator] Server started on port ' . $config->{config}{LocalPort} . $/
+
+    open ( my $fh, '>', $file_path);
+    close($fh);
+
     new_one();
 
     while (1) {
@@ -86,7 +87,6 @@ sub new_one {
                   int(rand(10)).' + .5e+1 * 2';
 
     my $pck = pack("A$buf_len", $/ . $new_row);
-    say 'new_one';
 
     open (my $fh, '>>:raw', $file_path);
     flock ($fh, LOCK_EX);
@@ -100,7 +100,5 @@ sub new_one {
    
     return;
 }
-
-start_server(8000);
 
 1;

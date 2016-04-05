@@ -3,6 +3,8 @@ package CalculationKernel::Starter;
 use strict;
 use warnings;
 
+use feature 'say';
+
 use IO::Socket;
 use JSON::XS;
 
@@ -44,52 +46,12 @@ sub server_kill {
     exit(0);
 }
 
-sub get_config {
-    my $port = shift;
-    my $config;
-    
-    if (-e $config_file and !-z $config_file) {
-        print 'Config File ' . $config_file . ' was found' . $/;
-
-        open (my $fh, '<', $config_file) or
-            print 'Can\'t open ' . $config_file . $/;
-        
-        my $lines;
-        (chomp($_), $lines .= $_) while (<$fh>);
-
-        my $src = JSON::XS::decode_json($lines);
-
-        for (@$src) {
-            $config = $_;
-            last if ($config->{name} eq 'CalculationKernel');
-            $config = undef;
-        }
-
-        close($fh);
-    }
-
-    unless ($config) {
-        print 'Config File ' . $config_file . ' not found' . $/;
-        $config = { config => 
-            {
-                LocalPort => $port,
-                Reuse_Addr => 1,
-                Listen => 2
-            },
-            clients => 50,
-        };
-    }
-
-    $config->{config}{Type} = SOCK_STREAM;
-    return $config;
-}
-
 sub _start_server {
     my $config = shift;
     my $server = IO::Socket::INET->new( %{$config->{config}} ) 
-        or die 'Can\'t create server on port ' . $config->{config}{LocalPort} . ": $@ $/";
+        or die '[CalculatorKernel] Can\'t create server on port ' . $config->{config}{LocalPort} . ": $@ $/";
 
-    print 'Server started' . $/;
+    print '[CalculationKernel] Server started on port ' . $config->{config}{LocalPort} . $/
 
     return $server;
 }
@@ -108,11 +70,10 @@ sub start_logger {
 }
 
 sub start_server {
-    my $port = shift;
+    my ($port, $config) = @_;
 
     $SIG{INT} = \&server_kill;
 
-    my $config = get_config($port);
     my $server = _start_server($config);
 
     ($LOG, $log_pid) = start_logger();
