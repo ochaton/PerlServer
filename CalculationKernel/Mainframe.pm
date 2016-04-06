@@ -158,12 +158,9 @@ sub serve_client {
 			chomp($msg);
 			$msg = unpack("A32", $msg);
 
-			print $LOG "[Mainframe($ppid)[$$]]::serve: Got message $msg $/";
-
 			last if ($msg eq 'END!');
 
 			my $ans = CalculationKernel::ServeClient::calculate($msg);
-			print $LOG "[Mainframe($ppid)[$$]]::serve: Calculate answ $ans $/";
 			$client->print(pack("A32", $ans) . $/);
 		}
 		

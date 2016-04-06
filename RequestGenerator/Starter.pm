@@ -28,7 +28,6 @@ sub start_server {
     print '[RequestGenerator] Server started on port ' . $config->{config}{LocalPort} . $/;
 
     my $client;
-
     $SIG{INT} = sub {
         print '[RequestGenerator] Stopped' . $/;
         
@@ -46,9 +45,6 @@ sub start_server {
 
         my $ans = RequestGenerator::FileGet::get($examples_count);
 
-        use Data::Dumper;
-        say Dumper($ans);
-
         $client->print('Processing...' . $/);
         $client->shutdown(2);
         close($client);
@@ -59,9 +55,6 @@ sub start_server {
 
 sub make_request {
     my ($conn, $msg, $clients_count) = @_;
-
-    use Data::Dumper;
-    say Dumper($conn);
     
     $clients_count = min (scalar(@$msg), $clients_count);
     my $exampl_len = scalar(@$msg) / $clients_count;
@@ -86,8 +79,6 @@ sub make_request {
                 chomp($answer);
                 $answer = unpack("A32", $answer);
 
-                say '[RequestGenerator] got msg ' . $answer;
-
                 push @ans, $answer;
             }
 
@@ -110,6 +101,7 @@ sub make_request {
     }
 
     until (waitpid (-1, 0) == -1) { };
+    say '[RequestGenerator] Request Done.';
 }
 
 1;

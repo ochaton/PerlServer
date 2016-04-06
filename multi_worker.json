@@ -1,6 +1,6 @@
 [{
     "name" : "CalculationKernel",
-    "clients" : 50,
+    "clients" : 25,
     "config":
     {
         "LocalPort" : 9000,
@@ -21,7 +21,7 @@
 },
 {
     "name" : "RequestGenerator",
-    "clients": 5,
+    "clients": 100,
     "config":
     {
         "LocalPort" : 9002,

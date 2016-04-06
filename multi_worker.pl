@@ -21,9 +21,9 @@ sub get_config {
     say '[multi_worker] ' . $server_name;
     
     if (-e $config_file and !-z $config_file) {
-        print 'Config File ' . $config_file . ' was found' . $/;
+        print '[multi_worker] Config File ' . $config_file . ' was found' . $/;
         open (my $fh, '<', $config_file) or
-            print 'Can\'t open ' . $config_file . $/;
+            print '[multi_worker] Can\'t open ' . $config_file . $/;
         
         my $lines;
         (chomp($_), $lines .= $_) while (<$fh>);
@@ -38,7 +38,7 @@ sub get_config {
     }
 
     unless ($config) {
-        print 'Config File ' . $config_file . ' not found' . $/;
+        print '[multi_worker] Config File ' . $config_file . ' not found' . $/;
         $config = { 
         	config => 
         	{

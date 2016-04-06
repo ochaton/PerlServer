@@ -30,7 +30,7 @@ my $server;
 
 sub server_kill {
 
-    print 'Starter: prepare to kill' . $/;
+    print '[CalculatorKernel] Starter: prepare to kill' . $/;
 
     kill 2, $listenner_pid; # send SIGINT
     kill 2, $log_pid;       # send SIGINT
@@ -39,7 +39,7 @@ sub server_kill {
     until (waitpid(-1, 0) == -1) {  }
 
     unlink($log_file);
-    print 'Log file ' . $log_file . ' was deleted' . $/;
+    print '[CalculationKernel] Log file ' . $log_file . ' was deleted' . $/;
 
     close($server) if $server;
 
@@ -64,7 +64,7 @@ sub start_logger {
     mkfifo($log_file, 0770) 
         or die 'Can\'t create ' . "$log_file: $@ $/";
 
-    print 'Log File ' . $log_file . ' created successfully' . $/; 
+    print '[CalculationKernel] Log File ' . $log_file . ' created successfully' . $/; 
 
     return logger($log_file);
 }

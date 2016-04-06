@@ -48,6 +48,7 @@ sub listenner {
 sub server_kill {
     ualarm(0);
     unlink($file_path);
+    print '[ServerGenerator] Server Stopped ' . $/;
     exit(0);
 }
 

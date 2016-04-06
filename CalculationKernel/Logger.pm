@@ -27,7 +27,7 @@ sub logger {
         $LOG->autoflush(1);
 
         $SIG{INT} = sub {
-            print 'Logger: Catch interraption' . $/;
+            print '[CalculatorKernel] Logger: Catch interraption' . $/;
 
             $LOGGER->print('[' . gmtime . '] ' . $_) while (<$LOG>) ;
             $LOGGER->print('[' . gmtime . '] ' . 'Logger Stoped' . $/);
