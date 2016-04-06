@@ -29,8 +29,8 @@ sub get_config {
         (chomp($_), $lines .= $_) while (<$fh>);
 
         my $src = JSON::XS::decode_json($lines);
-        for (@$src) {
-            $config = $_;
+        for my $row (@$src) {
+            $config = $row;
             last if ($config->{name} eq $server_name);
             $config = undef;
         }
@@ -67,7 +67,7 @@ unless ($gen_pid) {
 }
 
 my $req_pid = fork();
-unless ($gen_pid) {
+unless ($req_pid) {
 	RequestGenerator::Starter::start_server(9102, get_config(9102, 'RequestGenerator'));
 	exit(0);
 }

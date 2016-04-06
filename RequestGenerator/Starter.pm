@@ -20,13 +20,17 @@ use FindBin;
 
 sub start_server {
 	my ($port, $config) = @_;
+
 	my $server = IO::Socket::INET->new( %{$config->{config}} ) 
         or die '[RequestGenerator] Can\'t create server on port ' . $config->{config}{LocalPort} . ": $@ $/";
 
-    print '[RequestGenerator] Server started on port ' . $port . $/;
+    print '[RequestGenerator] Server started on port ' . $config->{config}{LocalPort} . $/;
 
-    use Data::Dumper;
-    say Dumper($config->{connection});
+    $SIG{INT} = sub {
+    	print '[RequestGenerator] Stopped' . $/;
+    	close($server);
+    	exit(0);
+    };
 
     while (my $client = $server->accept()) {
         $_ = <$client>;
@@ -83,7 +87,5 @@ sub make_request {
 	until (waitpid (-1, 0) == -1) { };
 
 }
-
-start_server(9102);
 
 1;
