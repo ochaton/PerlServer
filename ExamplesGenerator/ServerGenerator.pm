@@ -10,11 +10,12 @@ use IO::File;
 use Time::HiRes qw/ ualarm /;
 
 use feature 'say';
+use FindBin;
 
 our $VERSION = '1.0';
-my $file_path = '../calcs.txt';
+my $file_path = $FindBin::Bin . '/./calcs.txt';
 
-my $timeout = 1000 * 1000;
+my $timeout = 1000 * 100;
 my $buf_len = 256;
 
 $SIG{ALRM} = sub {
@@ -58,7 +59,7 @@ sub start_server {
     my $server = IO::Socket::INET->new( %{$config->{config}} )
       or die "[ServerGenerator] Can't create server on $port port: $@ $/";
 
-    print '[ServerGenerator] Server started on port ' . $config->{config}{LocalPort} . $/
+    print '[ServerGenerator] Server started on port ' . $config->{config}{LocalPort} . $/;
 
     open ( my $fh, '>', $file_path);
     close($fh);
@@ -86,12 +87,13 @@ sub new_one {
                   int(rand(10)).' + .5e-1', 
                   int(rand(10)).' + .5e+1 * 2';
 
-    my $pck = pack("A$buf_len", $/ . $new_row);
+    my $pck = pack("A$buf_len", $new_row);
 
     open (my $fh, '>>:raw', $file_path);
     flock ($fh, LOCK_EX);
     
     $fh->print($pck);
+    # say 'new_one';
     
     flock ($fh, LOCK_UN);
     close($fh);
