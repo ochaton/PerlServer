@@ -23,6 +23,8 @@ $| = 1;
 use v5.018;
 use DDP;
 
+use CalculationKernel::ServeClient;
+
 my $client_count;
 my $LOG;
 
@@ -138,31 +140,37 @@ sub serve_client {
 		};
 		
 		tie $client_count, 'IPC::Shareable', $client_glue, { %options } or 
-			die "[Mainframe($$)]::tie died: $!";
+			die "[Mainframe($$)[$$]]::tie died: $!";
 
 		my $ppid = getppid();
-		print $LOG "[Mainframe($ppid)]::serve: Client openned $$ $/";
+		print $LOG "[Mainframe($ppid)[$$]]::serve: Client openned $$ $/";
 
 		close ($server);
 
 		unless (defined $client) {
-			print $LOG "[Mainframe($ppid)]::serve: client (undef) closed: $$ $/";
+			print $LOG "[Mainframe($ppid)[$$]]::serve: client (undef) closed: $$ $/";
 			dec_client_count;
 			show_client_count;
 			exit;
 		}
+		
+		while (my $msg = <$client>) {
+			chomp($msg);
+			$msg = unpack("A32", $msg);
 
-		$client->autoflush(1);
-		my $msg = <$client>;
-		chomp($msg);
-	
-		print $client "Answer: got it!\n";
-		print $client "Recieve END\n" if $msg eq 'END';
+			print $LOG "[Mainframe($ppid)[$$]]::serve: Got message $msg $/";
+
+			last if ($msg eq 'END!');
+
+			my $ans = CalculationKernel::ServeClient::calculate($msg);
+			print $LOG "[Mainframe($ppid)[$$]]::serve: Calculate answ $ans $/";
+			$client->print(pack("A32", $ans) . $/);
+		}
 		
 		$client->shutdown(2);
 		close($client);
 
-		print $LOG "[Mainframe($ppid)]::serve: client closed: $$ $/";
+		print $LOG "[Mainframe($ppid)[$$]]::serve: client closed: $$ $/";
 		dec_client_count;
 		show_client_count;
 	

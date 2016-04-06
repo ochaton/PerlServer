@@ -17,11 +17,12 @@ our @EXPORT = qw( start_server );
 use RequestGenerator::FileGet;
 
 use FindBin;
+my $answer_file = $FindBin::Bin . '/./answers.txt';
 
 sub start_server {
-	my ($port, $config) = @_;
+    my ($port, $config) = @_;
 
-	my $server = IO::Socket::INET->new( %{$config->{config}} ) 
+    my $server = IO::Socket::INET->new( %{$config->{config}} ) 
         or die '[RequestGenerator] Can\'t create server on port ' . $config->{config}{LocalPort} . ": $@ $/";
 
     print '[RequestGenerator] Server started on port ' . $config->{config}{LocalPort} . $/;
@@ -29,19 +30,19 @@ sub start_server {
     my $client;
 
     $SIG{INT} = sub {
-    	print '[RequestGenerator] Stopped' . $/;
-    	
-    	$client->shutdown(2);
-    	close($client);
+        print '[RequestGenerator] Stopped' . $/;
+        
+        $client->shutdown(2);
+        close($client);
 
-    	close($server);
-    	exit(0);
+        close($server);
+        exit(0);
     };
 
     while ($client = $server->accept()) {
         my $var = <$client>;
 
-        my $examples_count = unpack("S", $var);		# expected...
+        my $examples_count = unpack("S", $var);     # expected...
 
         my $ans = RequestGenerator::FileGet::get($examples_count);
 
@@ -57,53 +58,58 @@ sub start_server {
 }
 
 sub make_request {
-	my ($conn, $msg, $clients_count) = @_;
+    my ($conn, $msg, $clients_count) = @_;
 
-	use Data::Dumper;
-	say Dumper($conn);
-	
-	$clients_count = min (scalar(@$msg), $clients_count);
-	my $exampl_len = scalar(@$msg) / $clients_count;
+    use Data::Dumper;
+    say Dumper($conn);
+    
+    $clients_count = min (scalar(@$msg), $clients_count);
+    my $exampl_len = scalar(@$msg) / $clients_count;
 
-	say '[RequestGenerator] Making new Request...';
-	say '[RequestGenerator] Client_count: ' . $clients_count;
-	say '[RequestGenerator] Examples Lenght: ' . $exampl_len;
-	
-	for my $idx (0..$clients_count-1) {
-		
-		my @arg = splice (@$msg, 0, $exampl_len);
-		my @ans;
+    say '[RequestGenerator] Making new Request...';
+    say '[RequestGenerator] Client_count: ' . $clients_count;
+    say '[RequestGenerator] Examples Lenght: ' . $exampl_len;
+    
+    for my $idx (0..$clients_count-1) {
+        
+        my @arg = splice (@$msg, 0, $exampl_len);
+        my @ans;
 
-		unless (fork()) {
-			my $socket = IO::Socket::INET->new( %$conn )
-				or die "[RequestGenerator] Can't establish connection: $@ $/";
-			
-			for my $var (@arg) {
-				$socket->print(pack("A32", $var . $/));
-				my $answer = <$socket>;
+        unless (fork()) {
+            my $socket = IO::Socket::INET->new( %$conn )
+                or die "[RequestGenerator] Can't establish connection: $@ $/";
+            
+            for my $var (@arg) {
+                $socket->print(pack("A32", $var) . $/);
+                my $answer = <$socket>;
 
-				push @ans, unpack("A32", $answer);
-			}
+                chomp($answer);
+                $answer = unpack("A32", $answer);
 
-			$socket->print(pack("A32", 'END!' . $/));
-			$socket->shutdown(2);
-			close($socket);
+                say '[RequestGenerator] got msg ' . $answer;
 
-			open (my $fh, '>>', '../answers.txt');
-			flock($fh, LOCK_SH);
+                push @ans, $answer;
+            }
 
-			for my $idx (0..scalar(@arg)) {
-				$fh->print($arg[$idx] . ' = ' . $ans[$idx] . $/);
-			}
+            $socket->print(pack("A32", 'END!' . $/));
+            $socket->shutdown(2);
+            close($socket);
 
-			flock($fh, LOCK_UN);
-			close($fh);
+            open (my $fh, '>>', $answer_file);
+            flock($fh, LOCK_SH);
 
-			exit(0);
-		}
-	}
+            for my $idx (0..scalar(@arg) - 1) {
+                $fh->print($arg[$idx] . ' = ' . $ans[$idx] . $/);
+            }
 
-	until (waitpid (-1, 0) == -1) { };
+            flock($fh, LOCK_UN);
+            close($fh);
+
+            exit(0);
+        }
+    }
+
+    until (waitpid (-1, 0) == -1) { };
 }
 
 1;

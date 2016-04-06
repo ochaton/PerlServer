@@ -1,0 +1,25 @@
+#!/usr/bin/env perl
+
+use strict;
+use warnings;
+
+use FindBin;
+
+require "$FindBin::Bin/./Calculator/lib/evaluate.pl";
+require "$FindBin::Bin/./Calculator/lib/rpn.pl";
+
+sub calculator { 
+    my $expression = shift;
+    return "" if $expression =~ /^\s*$/;
+
+    eval {
+        my $rpn = rpn($expression);
+        my $value = evaluate($rpn);
+        return $value;
+    1} or do {
+        # print "Error: $@";
+        return 'NaN';
+    };
+}
+
+1;

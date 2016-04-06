@@ -3,7 +3,7 @@
     "clients" : 50,
     "config":
     {
-        "LocalPort" : 9100,
+        "LocalPort" : 9000,
         "Type" : "SOCK_STREAM",
         "Reuse_Addr" : 1,
         "Listen" : 2
@@ -13,7 +13,7 @@
     "name" : "ExamplesGenerator",
     "config":
     {
-        "LocalPort" : 9101,
+        "LocalPort" : 9001,
         "Type" : "SOCK_STREAM",
         "Reuse_Addr" : 1,
         "Listen" : 2
@@ -24,7 +24,7 @@
     "clients": 5,
     "config":
     {
-        "LocalPort" : 9102,
+        "LocalPort" : 9002,
         "Type" : "SOCK_STREAM",
         "Reuse_Addr" : 1,
         "Listen" : 2
@@ -32,7 +32,7 @@
     "connection":
     {
         "PeerAddr" : "localhost",
-        "PeerPort" : 9100,
+        "PeerPort" : 9000,
         "Proto"    : "tcp",
         "Type"     : "SOCK_STREAM"
     }
