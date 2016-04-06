@@ -26,34 +26,52 @@ sub start_server {
 
     print '[RequestGenerator] Server started on port ' . $config->{config}{LocalPort} . $/;
 
+    my $client;
+
     $SIG{INT} = sub {
     	print '[RequestGenerator] Stopped' . $/;
+    	
+    	$client->shutdown(2);
+    	close($client);
+
     	close($server);
     	exit(0);
     };
 
-    while (my $client = $server->accept()) {
-        $_ = <$client>;
+    while ($client = $server->accept()) {
+        my $var = <$client>;
 
-        my $examples_count = unpack("S", $_);	# expected...
+        my $examples_count = unpack("S", $var);		# expected...
+
         my $ans = RequestGenerator::FileGet::get($examples_count);
 
-        $ans = make_request($config->{connection}, $ans, $config->{clients});
-            
+        use Data::Dumper;
+        say Dumper($ans);
+
+        $client->print('Processing...' . $/);
         $client->shutdown(2);
         close($client);
+
+        $ans = make_request(\%{ $config->{connection} }, $ans, $config->{clients});
     }
 }
 
 sub make_request {
 	my ($conn, $msg, $clients_count) = @_;
+
+	use Data::Dumper;
+	say Dumper($conn);
 	
 	$clients_count = min (scalar(@$msg), $clients_count);
 	my $exampl_len = scalar(@$msg) / $clients_count;
+
+	say '[RequestGenerator] Making new Request...';
+	say '[RequestGenerator] Client_count: ' . $clients_count;
+	say '[RequestGenerator] Examples Lenght: ' . $exampl_len;
 	
-	for (0..$clients_count) {
+	for my $idx (0..$clients_count-1) {
 		
-		my @arg = splice (@$msg, $_ * $exampl_len, $exampl_len);
+		my @arg = splice (@$msg, 0, $exampl_len);
 		my @ans;
 
 		unless (fork()) {
@@ -84,8 +102,8 @@ sub make_request {
 			exit(0);
 		}
 	}
-	until (waitpid (-1, 0) == -1) { };
 
+	until (waitpid (-1, 0) == -1) { };
 }
 
 1;

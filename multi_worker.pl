@@ -51,6 +51,7 @@ sub get_config {
     }
 
     $config->{config}{Type} = SOCK_STREAM;
+    $config->{connection}{Type} = SOCK_STREAM if (defined $config->{connection});
     return $config;
 }
 

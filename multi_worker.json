@@ -21,7 +21,7 @@
 },
 {
     "name" : "RequestGenerator",
-    "clients": 50,
+    "clients": 5,
     "config":
     {
         "LocalPort" : 9102,

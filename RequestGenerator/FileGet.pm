@@ -16,7 +16,7 @@ our @EXPORT = qw( get );
 
 use FindBin;
 
-my $file_path =  '../calcs.txt';
+my $file_path =  $FindBin::Bin . '/./calcs.txt';
 my $last_pos = 0;
 my $buf_len = 256;
 
