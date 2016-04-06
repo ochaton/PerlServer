@@ -11,8 +11,8 @@ use Fcntl ':flock';
 use Fcntl qw ( SEEK_SET );
 
 use base qw(Exporter);
-our @EXPORT_OK = qw( start_server );
-our @EXPORT = qw( start_server );
+our @EXPORT_OK = qw( get );
+our @EXPORT = qw( get );
 
 use FindBin;
 

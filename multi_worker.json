@@ -21,11 +21,19 @@
 },
 {
     "name" : "RequestGenerator",
+    "clients": 50,
     "config":
     {
         "LocalPort" : 9102,
         "Type" : "SOCK_STREAM",
         "Reuse_Addr" : 1,
         "Listen" : 2
+    },
+    "connection":
+    {
+        "PeerAddr" : "localhost",
+        "PeerPort" : 9100,
+        "Proto"    : "tcp",
+        "Type"     : "SOCK_STREAM"
     }
 }]

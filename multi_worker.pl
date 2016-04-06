@@ -2,8 +2,9 @@
 use strict;
 use warnings;
 
-use CalculationKernel::Starter qw ( start_server );
-use ExamplesGenerator::ServerGenerator; 
+use CalculationKernel::Starter;
+use ExamplesGenerator::ServerGenerator;
+use RequestGenerator::Starter;
 
 use IO::Socket;
 use JSON::XS;
@@ -65,9 +66,16 @@ unless ($gen_pid) {
 	exit(0);
 }
 
+my $req_pid = fork();
+unless ($gen_pid) {
+	RequestGenerator::Starter::start_server(9102, get_config(9102, 'RequestGenerator'));
+	exit(0);
+}
+
 $SIG{INT} = sub {
 	kill 2, $gen_pid;
 	kill 2, $calc_pid;
+	kill 2, $req_pid;
 	until (waitpid(-1, 0) == -1) { };
 
 	exit(0);

@@ -51,7 +51,7 @@ sub _start_server {
     my $server = IO::Socket::INET->new( %{$config->{config}} ) 
         or die '[CalculatorKernel] Can\'t create server on port ' . $config->{config}{LocalPort} . ": $@ $/";
 
-    print '[CalculationKernel] Server started on port ' . $config->{config}{LocalPort} . $/
+    print '[CalculationKernel] Server started on port ' . $config->{config}{LocalPort} . $/;
 
     return $server;
 }
